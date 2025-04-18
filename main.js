@@ -1,8 +1,11 @@
 var tileNum = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+var nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 var turns = document.getElementById("result");
-
+var indexGlobal = 0;
 var t = 0;
 var emptyTile;
+
+var box = [];
 
 var row = 4;
 var col = 4;
@@ -19,11 +22,57 @@ function startGame() {
   assignTileNum();
  
 }
+function logSeq(){
+  
+  let board = document.getElementById("board");
+  let tile = board.children;
+  for(let index = 0; index <= tileNum.length; index++){
+   box.push(parseInt(tile[index].innerText));
+  }
+  if(Number.isNaN(box[box.length -1])){
+  box = box.filter(n => !Number.isNaN(n));
+}
+  let winning = checkWin(box, nums);
+  if(winning){
+    turns.innerText ="Well Done!";
+  }
+  box = [];
+}
+function checkWin(curr, win){
+  for (let i = 0; i < curr.length; i++) {
+     if(curr[i] !== win[i]) return false;
+  }
+  return true;
+}
+
+function reset(){
+  turns.innerText = 0;
+
+  t= 0;
+  let board = document.getElementById("board");
+  let tile = board.children;
+
+  for (let r = 0; r < row; r++) {
+    for (let c = 0; c < col; c++) {
+      let index = r * col + c;
+      let tiles = tile[index];
+      tiles.id = r.toString() + "-" + c.toString();
+      tiles.classList = "tile";
+    }
+  }
+  jumbleTiles();
+
+  allocateEmptyClass();
+
+  assignTileNum();
+
+}
 
 // no of turns 
 function noOfTurns(){
   t++;
   turns.innerText = t;  
+  logSeq();
 }
 // to load the game
 function loadGame() {
@@ -67,12 +116,20 @@ function toLoopOverBoard() {
 // assing each tile a number
 function assignTileNum() {
   toLoopOverBoard().forEach((i) => {
-    let tiles = document.getElementById(i);
-    if (tiles.classList == "tile") {
-      tiles.innerText = tileNum.shift();
-    } else {
+    tiles = document.getElementById(i);
+    
+    if (tiles.classList == "empty") {
       tiles.innerText = " ";
     }
+    
+    if (tiles.classList == "tile") {
+      tiles.innerText = tileNum[indexGlobal];
+      indexGlobal++;
+    }
+    if(indexGlobal > 14) {
+      indexGlobal = 0;
+    }
+    
   });
 }
 // fucntion to check the cliked tile
@@ -98,13 +155,13 @@ function tileClicked() {
 function tilesIds(r, c) {
   var currTile = document.getElementById(r.toString() + "-" + c.toString());
 
-  function checkempty() {
-    checkLeft(currTile, r, c);
-    checkRight(currTile, r, c);
-    checkTop(currTile, r, c);
-    checkBottom(currTile, r, c);
-  }
-  checkempty();
+  checkempty(currTile, r,c);
+}
+function checkempty(currTile, r,c) {
+  checkLeft(currTile, r, c);
+  checkRight(currTile, r, c);
+  checkTop(currTile, r, c);
+  checkBottom(currTile, r, c);
 }
 // look left
 function checkLeft(currTile, r, c) {
@@ -113,16 +170,10 @@ function checkLeft(currTile, r, c) {
       r.toString() + "-" + (c - 1).toString()
     );
     if (leftTile.className == "empty") {
-      // console.log(leftTile.id);
       slideLeft(currTile, leftTile);
     }
-    // else {
-    //   console.log("left tile");
-    // }
+
   }
-  // else {
-  //   console.log("left border");
-  // }
 }
 // look right
 function checkRight(currTile, r, c) {
@@ -131,16 +182,9 @@ function checkRight(currTile, r, c) {
       r.toString() + "-" + (c + 1).toString()
     );
     if (rightTile.className == "empty") {
-      // console.log(rightTile.id);
       slideRight(currTile, rightTile);
     }
-    // else {
-    //   console.log(" right tile");
-    // }
   }
-  // else {
-  //   console.log("right border");
-  // }
 }
 // look up
 function checkTop(currTile, r, c) {
@@ -149,17 +193,10 @@ function checkTop(currTile, r, c) {
       (r - 1).toString() + "-" + c.toString()
     );
     if (topTile.className == "empty") {
-      // console.log(topTile.id);
       slideRight(currTile, topTile);
     }
-    // else {
-    //   console.log(" top tile");
-    // }
+   }
   }
-  // else {
-  //   console.log("top border");
-  // }
-}
 // look down
 function checkBottom(currTile, r, c) {
   if (r >= 0 && r < row - 1) {
@@ -168,17 +205,10 @@ function checkBottom(currTile, r, c) {
     );
 
     if (bottomTile.className == "empty") {
-      // console.log(bottomTile.id);
       slideRight(currTile, bottomTile);
     }
-    // else {
-    //   console.log(" bottom tile");
-    // }
   }
-  // else {
-  //   console.log("bottom border");
-  // }
-}
+  }
 // the SLIDEEE LEFTTT
 function slideLeft(currTile, leftTile) {
   leftTile.classList = "tile";
